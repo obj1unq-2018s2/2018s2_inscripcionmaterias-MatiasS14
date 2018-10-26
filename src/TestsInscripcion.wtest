@@ -5,21 +5,23 @@ import carrera.*
 describe"tests de inscripcion"{
 	
 	var estudiante= new Estudiante()
+	var estudiante2= new Estudiante()
+	var estudiante3= new Estudiante()
 	var objetos2= new Materia()
 	var mate1= new Materia()
 	var objetos1= new Materia()
-	var materiasC=#{objetos1,mate1,objetos2}
+	var materiasCarrera=#{objetos1,mate1,objetos2}
 	var licInformatica= new Carrera( )
 	
 	fixture{
 		
 		
 		objetos2.materiasCorrelativas(#{mate1,objetos1})
-		objetos2.cupos(0)// para comprobar el assert de los cupos cambiar la cantidad de cupos a 0
+		objetos2.cupos(2)// para comprobar el assert de los cupos cambiar la cantidad de cupos a 0
 		objetos2.anioMateria(2)
 		objetos2.creditosNecesarios(20)
 		objetos2.creditosAlAprobar(20)
-		objetos2.alumnosInscriptos(#{})
+		objetos2.alumnosInscriptos(#{estudiante2,estudiante3})
 		objetos2.listaDeEspera(#{})
 		
 		objetos1.materiasCorrelativas(#{})
@@ -34,21 +36,23 @@ describe"tests de inscripcion"{
 		
 		
 	
-		licInformatica.materiasDeLaCarrera(materiasC)
+		licInformatica.materiasDeLaCarrera(materiasCarrera)
 		estudiante.registrarMateriaAprobada(mate1,7)
 		estudiante.registrarMateriaAprobada(objetos1,7)//agregar objetos1 a las materias aprobadas
 		estudiante.carreras(#{licInformatica})
 		
 	}
 	
-	test "Inscripcion rechazada por correlativa faltante" {
-		estudiante.inscribirAMateria(objetos2)
-		assert.notThat(estudiante.materiasEnLasQueEstaInscripto(estudiante)== objetos2 )
+
+	test "Inscripcion rechazada al intentar inscribirse a materia ya aprobada" {
+		estudiante.inscribirAMateria(objetos1)
+		assert.notThat( estudiante.materiasEnLasQueEstaInscripto(estudiante).contains(objetos1))
+		
 	}
 	
 	test "Inscripcion rechazada por falta de cupos"{
 		estudiante.inscribirAMateria(objetos2)
-		assert.equals(objetos2, estudiante.materiasEnListaDeEspera(estudiante))
+		assert.that( estudiante.materiasEnListaDeEspera(estudiante).contains(objetos2) )		
 	}
 
 }

@@ -11,18 +11,26 @@ class Estudiante {
 	}
 	
 	method cumpleRequisitosdeInscripcionA(materia){
+		
 		return !self.aprobo(materia) and !self.estaInscriptoA(materia) and
-		 self.materiaEsDeCarrera(materia) and self.cumplePrerrequisitosMateria(materia)
+		
+			    self.materiaEsDeCarrera(materia) and self.cumplePrerrequisitosMateria(materia)
 	}
 	
 	method aprobo(materia)= materiasAprobadas.contains(materia)
 	
 	method estaInscriptoA(materia) = materia.alumnosInscriptos().contains(self)
 	
-	method materiaEsDeCarrera(materia)= carreras.any{carrera => materia.perteneceACarrera(carrera)}
+	method materiaEsDeCarrera(materia)= carreras.any{carrera =>
+		
+		materia.perteneceACarrera(carrera)
+	}
 	
-	method cumpleMateriasCorrelativas(materia)= materia.materiasCorrelativas().intersection( materiasAprobadas ) ==
-																					 materia.materiasCorrelativas()
+	method cumpleMateriasCorrelativas(materia)= 
+	
+		materia.materiasCorrelativas().intersection( materiasAprobadas) ==
+		
+		materia.materiasCorrelativas()
 	
 	method cumplePrerrequisitosMateria(materia)= materia.puedeInscribirse(self)
 	
@@ -33,7 +41,16 @@ class Estudiante {
 	method tieneCreditosSuficientes(materia) = totalCreditos == materia.creditosNecesarios() 
 	
 	method aproboMateriasDeAnio(anio){
-		return true
+		
+		return 	materiasAprobadas.contains(self.materiasDeAnio(anio))
+	}
+	
+	method materiasDeAnio(anio){
+		return self.carreras().flatMap{carrera=>
+			
+			carrera.materiasDeLaCarrera()
+			
+		}.filter{materia =>materia.anioMateria()==anio}
 	}
 	
 	method registrarMateriaAprobada(materia,nota){
@@ -52,7 +69,7 @@ class Estudiante {
 	
 	method inscribirAMateria(materia){
 		
-		if(self.puedeCursar(materia) and ! materia.haySobrecupo()){
+		if(self.puedeCursar(materia) and not materia.haySobrecupo()){
 			
 			materia.inscribirAlumno(self)
 		}
@@ -75,17 +92,44 @@ class Estudiante {
 		 }
 	}
 	
-	method materiasEnLasQueEstaInscripto(estudiante)=
-		estudiante.carreras().all{carrera=> estudiante.materiasQueCursa(carrera)}
+	method materiasEnLasQueEstaInscripto(estudiante){
+		var materias=#{}
+		
+		 estudiante.carreras().forEach{ carrera =>
+		 	
+		 	#{materias,estudiante.materiasQueCursa(carrera)}.flatten()
+		 }
+		 
+		 return materias
+	}
+	
+	method materiasQueCursa(carrera)= carrera.materiasDeLaCarrera().filter{ materia =>
+		
+		self.estaInscriptoA(materia)
+	}
+	
+	method materiasEnListaDeEspera(estudiante){
+		var materias=#{}
+		
+		 estudiante.carreras().forEach{ carrera =>
+		 	 
+		 	#{materias,estudiante.materiasEnEspera(carrera)}.flatten()
+		 }
+		 
+		 return materias
+	}
 	
 	
-	method materiasQueCursa(carrera)= carrera.materiasDeLaCarrera().all{ materia => self.estaInscriptoA(materia) }
+	method materiasEnEspera(carrera)= carrera.materiasDeLaCarrera().filter{ materia =>
+		 
+		materia.listaDeEspera().contains(self)
+	}
 	
-	method materiasEnListaDeEspera(estudiante)=
-		estudiante.carreras().all{carrera=> estudiante.materiasEnEspera(carrera)}
+	method promedio()= materiasAprobadas.sum{ materia => 
+		
+		materia.nota()} / materiasAprobadas.size() 
 	
-	
-	method materiasEnEspera(carrera)= carrera.materiasDeLaCarrera().all{ materia => materia.listaDeEspera().contains(self) }
+	method avanceDeCarrera()= materiasAprobadas.size()
 	
 	
 }
